@@ -34,12 +34,13 @@ public class WebSource extends DataSource {
 
         try {
         	bis = new BufferedInputStream(httpUrl.getInputStream());
-        	readCSVFile(new InputStreamReader(bis));
+        	readCSVData(new InputStreamReader(bis));
         	bis.close();
         } catch( IOException ex ) {
         	ex.printStackTrace();
         } finally {
-        	bis.close();
+        	if( bis != null )
+        		bis.close();
         }
         
     	httpUrl.disconnect();

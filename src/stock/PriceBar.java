@@ -14,7 +14,7 @@ public class PriceBar {
 	public static final int MINUTES = 8;
 	
 	
-	protected float _open;
+	protected float open;
 	protected float close;
 	protected float high;
 	protected float low;
@@ -38,13 +38,13 @@ public class PriceBar {
 	
 	public String toString() {
 		return DataSource.DATE_FORMAT.format(this.start) + "," + 
-				this._open + "," + this.high + "," + this.low + "," + this.close;
+				this.open + "," + this.high + "," + this.low + "," + this.close;
 	}
 	
 	public float get(int field) {
 		switch(field) {
 		case OPEN:
-			return _open;
+			return open;
 		case CLOSE:
 			return close;
 		case HIGH:
@@ -66,7 +66,7 @@ public class PriceBar {
 	public void set(int field, float value) {
 		switch(field) {
 		case OPEN:
-			_open = value;
+			open = value;
 			break;
 		case CLOSE:
 			close = value;

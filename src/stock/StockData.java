@@ -31,7 +31,8 @@ public class StockData extends PriceBar {
 		start_time.setTime(start);
 		Calendar end_date = new GregorianCalendar();
 		end_date.setTime(end);
-		source = new WebSource(this.code, this.market);
+		source = new FileSource(this.code, this.market);
+//		source = new WebSource(this.code, this.market);
 		
 		try {
 			List<List<String>> data = source.get(start_time, end_date);
@@ -158,7 +159,7 @@ public class StockData extends PriceBar {
 		}
 		
 		if( bar != null ) {
-			this._open = bar._open;
+			this.open  = bar. open;
 			this.start = bar.start;
 			this.minutes = bar.minutes * bar_list.size();
 		}

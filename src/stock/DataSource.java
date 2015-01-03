@@ -40,7 +40,7 @@ public abstract class DataSource {
 	 * 每一行为一个list。 再将所有的行放到一个总list中
 	 * @throws IOException 
 	 */
-	public List< List<String> > readCSVFile(InputStreamReader fr) 
+	public List< List<String> > readCSVData(InputStreamReader fr) 
 			throws IOException {
 		BufferedReader br = new BufferedReader(fr);
 		String rec = null;// 一行
