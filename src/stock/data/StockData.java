@@ -1,4 +1,4 @@
-package stock;
+package stock.data;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -9,6 +9,10 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+
+import stock.source.DataSource;
+import stock.source.FileSource;
+import stock.source.WebSource;
 
 public class StockData extends PriceBar {
 
@@ -90,16 +94,16 @@ public class StockData extends PriceBar {
 				
 				switch(cell) {
 				case "OPEN" :
-					fields[i] = PriceBar.OPEN;
+					fields[i] = PriceBar.PRICE_OPEN;
 					break;
 				case "CLOSE" :
-					fields[i] = PriceBar.CLOSE;
+					fields[i] = PriceBar.PRICE_CLOSE;
 					break;
 				case "HIGH" :
-					fields[i] = PriceBar.HIGH;
+					fields[i] = PriceBar.PRICE_HIGH;
 					break;
 				case "LOW" :
-					fields[i] = PriceBar.LOW;
+					fields[i] = PriceBar.PRICE_LOW;
 					break;
 				case "VOLUME" :
 					fields[i] = PriceBar.VOLUME;

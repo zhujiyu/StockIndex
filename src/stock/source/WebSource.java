@@ -1,4 +1,4 @@
-package stock;
+package stock.source;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
