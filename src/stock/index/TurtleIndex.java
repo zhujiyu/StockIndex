@@ -33,15 +33,15 @@ public class TurtleIndex extends StockIndex {
 	public void calcIndex(List<PriceBar> bars) {
 		
 //		PriceBar[] bars = (PriceBar[]) bl.toArray();
-		LinkedList<Float> prices = new LinkedList<Float>();
+		LinkedList<Double> prices = new LinkedList<Double>();
 		
 		for( int i = bars.size() - 1; i >= 0; --i ) {
 			if( prices.size() >= this.terms )
 				prices.poll();
 			PriceBar bar = bars.get(i);
 			
-			float v = bar.get(this.datatype), iv = v;
-			Iterator<Float> iter = prices.iterator();
+			double v = bar.get(this.datatype), iv = v;
+			Iterator<Double> iter = prices.iterator();
 			
 			if( this.direct == DIRECT_BUY ) {
 //				v = bar.high;

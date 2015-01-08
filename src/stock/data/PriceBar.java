@@ -21,12 +21,12 @@ public class PriceBar {
 	public static final int MINUTES = 0xf9;
 
 	
-	public float open;
-	public float close;
-	public float high;
-	public float low;
-
-	public float volume;
+	public double open;
+	public double close;
+	public double high;
+	public double low;
+	public double volume;
+	
 	public Date  start;
 	public int minutes;
 
@@ -47,7 +47,7 @@ public class PriceBar {
 				this.open + "," + this.high + "," + this.low + "," + this.close;
 	}
 	
-	public float get(int field) {
+	public double get(int field) {
 		switch(field) {
 		case PRICE_OPEN:
 			return open;
@@ -71,7 +71,7 @@ public class PriceBar {
 		return 0;
 	}
 	
-	public void set(int field, float value) {
+	public void set(int field, double value) {
 		switch(field) {
 		case PRICE_OPEN:
 			open = value;

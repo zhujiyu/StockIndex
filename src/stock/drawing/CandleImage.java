@@ -1,4 +1,4 @@
-package stock;
+package stock.drawing;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -31,9 +31,9 @@ public class CandleImage {
 	private List<StockIndex> indexes = new ArrayList<StockIndex>();
 	
 	private int step = 8;
-	private int trans = 10;
-	private int moving = 0;
-	private float zoom = 0.6f;
+	private int trans = 0;  ///< transform the initialize position of candle image to left 
+	private int scoll = 0;  ///< scoll screen
+	private float scale = 0.6f;
 	
 	public CandleImage(StockData data) {
 		this.bar_list = data.getBarSet();
@@ -46,6 +46,14 @@ public class CandleImage {
 
 	public void setBarWidth(int width) {
 		this.step = width;
+	}
+	
+	public void tranCandle(int trans) {
+		this.trans = trans;
+	}
+	
+	public void scollCandle(int move) {
+		this.scoll = move;
 	}
 	
 	public void Save(String file) {
@@ -70,7 +78,7 @@ public class CandleImage {
 	public void display(Graphics g, Rectangle rect) {
 		
 		int divid = Math.round(rect.height * 0.8f);
-		float b = divid * 0.5f, s = b * zoom;
+		float b = divid * 0.5f, s = b * scale;
 		Rectangle topWindow = new Rectangle(rect.x, rect.y + Math.round(b - s),
 				rect.width, Math.round(2 * s)); 
 //				rect.width, rect.y + Math.round(b + s));
@@ -89,12 +97,12 @@ public class CandleImage {
 //		rect.height = Math.round(temp);
 
 		topWindow.width = btmWindow.width = Math.min(rect.width, 
-				rect.width - trans * step + moving * step);
+				rect.width + (scoll - trans) * step);
 		int count = Math.min(topWindow.width / step + 1, bar_list.size());
-		float high = 0, low = 0, maxVolume = 0;
+		double high = 0, low = 0, maxVolume = 0;
 		
 		Iterator<PriceBar> iter = bar_list.listIterator(Math.max(0, 
-				moving - trans));
+				scoll - trans));
 		PriceBar[] bars = new PriceBar[count];
 
 		if( iter.hasNext() ) {
@@ -113,23 +121,24 @@ public class CandleImage {
 
 		drawVolume(g, bars, btmWindow, maxVolume);
 		drawCandle(g, bars, topWindow, high, low);
+		
 		Iterator<StockIndex> _it = indexes.iterator();
 		while( _it.hasNext() ) {
 			StockIndex index = _it.next();
-			if( index.window_index == StockIndex.WINDOW_TOP )
-				drawIndex(g, index, bars, topWindow, high - low, low, 1);
-			else if( index.window_index == StockIndex.WINDOW_BOTTOM )
-				drawIndex(g, index, bars, btmWindow, maxVolume, 0, 0.8f);
+			if( index.getWindowIndex() == StockIndex.WINDOW_TOP )
+				index.drawIndex(g, bars, step, topWindow, high - low, low, 1);
+			else if( index.getWindowIndex() == StockIndex.WINDOW_BOTTOM )
+				index.drawIndex(g, bars, step, btmWindow, maxVolume, 0, 0.8f);
 		}
 	}
 	
 	private void drawCandle(Graphics g, PriceBar[] bars, 
-			Rectangle rect, float high, float low) {
+			Rectangle rect, double high, double low) {
 
 		int delta = step / 8, bar_width = step * 3 / 4;
 		int x = rect.width - step + delta, height = rect.y + rect.height,
 				middle = rect.width - step / 2;
-		float bhp = rect.height / (high - low);
+		double bhp = rect.height / (high - low);
 		
 		Graphics2D g2d = (Graphics2D)g;
 		g2d.setStroke(new BasicStroke(2));
@@ -141,8 +150,8 @@ public class CandleImage {
 //				top = curr.get(PriceBar.OPEN);
 //				btm = curr.get(PriceBar.CLOSE);
 
-				int y = Math.round( (curr.open - low) * bhp );
-				int h = Math.round( (curr.close - low) * bhp );
+				int y = (int) Math.round( (curr.open - low) * bhp );
+				int h = (int) Math.round( (curr.close - low) * bhp );
 
 				g.setColor(Color.green);
 				g.fillRect(x, height - y, bar_width, y - h);
@@ -151,15 +160,15 @@ public class CandleImage {
 //				btm = curr.get(PriceBar.OPEN);
 //				top = curr.get(PriceBar.CLOSE);
 
-				int y = Math.round( (curr.close - low) * bhp );
-				int h = Math.round( (curr.open - low) * bhp );
+				int y = (int) Math.round( (curr.close - low) * bhp );
+				int h = (int) Math.round( (curr.open - low) * bhp );
 				
 				g.setColor(Color.red);
 				g.drawRect(x, height - y, bar_width, y - h);
 			}
 			
-			int y1 = Math.round( (curr.get(PriceBar.PRICE_HIGH) - low) * bhp );
-			int y2 = Math.round( (curr.get(PriceBar.PRICE_LOW) - low) * bhp );
+			int y1 = (int) Math.round( (curr.get(PriceBar.PRICE_HIGH) - low) * bhp );
+			int y2 = (int) Math.round( (curr.get(PriceBar.PRICE_LOW) - low) * bhp );
 			g.drawLine(middle, height - y1, middle, height - y2);
 			
 			x -= step;
@@ -167,11 +176,11 @@ public class CandleImage {
 		}
 	}
 	
-	private void drawVolume(Graphics g, PriceBar[] bars, Rectangle rect, float maxv) {
+	private void drawVolume(Graphics g, PriceBar[] bars, Rectangle rect, double maxv) {
 
 		int delta = step / 8, bar_width = step * 3 / 4;
 		int x = rect.width - step + delta, bottom = rect.y + rect.height;
-		float vhp = rect.height / maxv * 0.8f;
+		double vhp = rect.height / maxv * 0.8f;
 		
 		((Graphics2D)g).setStroke(new BasicStroke(1));
 		
@@ -183,42 +192,42 @@ public class CandleImage {
 			else
 				g.setColor(Color.green);
 
-			int vh =  Math.round( curr.volume * vhp );
+			int vh =  (int) Math.round( curr.volume * vhp );
 			g.fillRect(x, bottom - vh, bar_width, vh);
 
 			x -= step;
 		}
 	}
 	
-	private void drawIndex(Graphics g, StockIndex index, PriceBar[] bars, 
-			Rectangle rect, float deltaValue, float baseValue, float zoom) {
-
-		if( bars.length == 0 )
-			return;
-		g.setColor(index.color);
-		
-		int middle = rect.width - step / 2 + index.move * step, 
-				height = rect.y + rect.height;
-		float hp = rect.height * zoom / deltaValue;
-		PriceBar prev = null, curr = null;
-
-		prev = bars[0];
-		middle -= step;
-
-		for( int i = 1; i < bars.length; i ++ ) {
-			curr = bars[i];
-
-			float p = index.get(prev.start), c = index.get(curr.start);
-			int py = Math.round( (p - baseValue) * hp );
-			int cy = Math.round( (c - baseValue) * hp );
-			
-			g.drawLine(middle + step, height - py, middle, height - cy);
-			
-			prev = curr;
-			middle -= step;
-		}
-	}
-	
+//	private void drawIndex(Graphics g, StockIndex index, PriceBar[] bars, 
+//			Rectangle rect, float deltaValue, float baseValue, float zoom) {
+//
+//		if( bars.length == 0 )
+//			return;
+//		g.setColor(index.color);
+//		
+//		int middle = rect.width - step / 2 + index.tran * step, 
+//				height = rect.y + rect.height;
+//		float hp = rect.height * zoom / deltaValue;
+//		PriceBar prev = null, curr = null;
+//
+//		prev = bars[0];
+//		middle -= step;
+//
+//		for( int i = 1; i < bars.length; i ++ ) {
+//			curr = bars[i];
+//
+//			float p = index.get(prev.start), c = index.get(curr.start);
+//			int py = Math.round( (p - baseValue) * hp );
+//			int cy = Math.round( (c - baseValue) * hp );
+//			
+//			g.drawLine(middle + step, height - py, middle, height - cy);
+//			
+//			prev = curr;
+//			middle -= step;
+//		}
+//	}
+//	
 //	private void _display(Graphics g, Rectangle rect, PriceBar[] bars, int step, 
 //			float high, float low) {
 //

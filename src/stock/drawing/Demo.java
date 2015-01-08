@@ -1,9 +1,10 @@
-package stock;
+package stock.drawing;
 
 import java.awt.Color;
 import java.text.ParseException;
 
 import stock.data.StockData;
+import stock.index.EnclosureLine;
 import stock.index.StockIndex;
 import stock.index.AverageLine;
 import stock.index.TurtleIndex;
@@ -18,26 +19,34 @@ public class Demo {
 	public static void main(String[] args) {
 
 		String code = "601390";
+//		String code = "600030";
 		StockData stock = new StockData(code, "ss");
 		
 		try {
-			stock.load(DataSource.DATE_FORMAT.parse("2014-07-01"));
+			stock.load(DataSource.DATE_FORMAT.parse("2014-07-01"), 
+					DataSource.SOUREC_FILE);
 			
 			if( stock.size() > 0 ) {
 				CandleImage candle = new CandleImage(stock);
-				candle.setBarWidth(8);
-				StockIndex index = new TurtleIndex(20, StockIndex.DIRECT_BUY);
-				candle.AddIndex(index);
-				index = new TurtleIndex(5, StockIndex.DIRECT_SELL, Color.red);
+				candle.tranCandle(30);
+				candle.setBarWidth(2);
+//				StockIndex index = new TurtleIndex(20, StockIndex.DIRECT_BUY);
+//				candle.AddIndex(index);
+//				index = new TurtleIndex(5, StockIndex.DIRECT_SELL, Color.red);
+//				candle.AddIndex(index);
+				
+				StockIndex index = new AverageLine(48, Color.white);
+				index.tranIndex(30);
 				candle.AddIndex(index);
 				
-				index = new AverageLine(5, Color.white);
-//				index.setMove(-5);
+				index = new EnclosureLine(48, Color.red);
+				((EnclosureLine)index).setShift(30);
+//				index.tranIndex(30);
 				candle.AddIndex(index);
 				
-				index = new AverageLine(48, Color.blue);
-//				index.setMove(5);
-				candle.AddIndex(index);
+//				index = new AverageLine(48, Color.blue);
+//				index.tranIndex(12);
+//				candle.AddIndex(index);
 
 				index = new AverageLine(10, Color.white);
 				index.setWindow(StockIndex.WINDOW_BOTTOM);

@@ -21,7 +21,8 @@ public class StockData extends PriceBar {
 	
 	private String code = "601857";
 	private String market = "ss";
-	private DataSource source;
+	private DataSource datasource;
+	
 	
 	private List<PriceBar> bar_list = new ArrayList<PriceBar>();
 	
@@ -35,30 +36,30 @@ public class StockData extends PriceBar {
 		start_time.setTime(start);
 		Calendar end_date = new GregorianCalendar();
 		end_date.setTime(end);
-		source = new FileSource(this.code, this.market);
+		
+//		source = new FileSource(this.code, this.market);
 //		source = new WebSource(this.code, this.market);
 		
 		try {
-			List<List<String>> data = source.get(start_time, end_date);
-			Parse(data);
+			List<List<String>> data = datasource.get(start_time, end_date);
+			this.Parse(data);
 		} catch (IOException e) {
-			String url = ((WebSource)source).getDataUrl(start_time, end_date);
+			String url = ((WebSource)datasource).getDataUrl(start_time, end_date);
 			System.out.println("download data from " + url + " failed.");
 			e.printStackTrace();
 		}
 	}
 	
-	public void load(Date start) {
+	public void load(Date start, int source) {
+		if( source == DataSource.SOUREC_FILE )
+			datasource = new FileSource(this.code, this.market);
+		else
+			datasource = new WebSource(this.code, this.market);
 		load(start, new Date());
 	}
 	
 	public void print() {
-		source.print();
-//		Iterator< Entry<Date, PriceBar> > iter = datamap.entrySet().iterator();
-//		while( iter.hasNext() ) {
-//			Entry<Date, PriceBar> entry = iter.next();
-//			System.out.println(entry.getValue());
-//		}
+		datasource.print();
 	}
 	
 	public String getInfo(int field) {
@@ -126,7 +127,8 @@ public class StockData extends PriceBar {
 				String cell = cellIter.next();
 				try {
 					if( fields[i] != PriceBar.START ) {
-						float price = Float.parseFloat(cell);
+						double price = Double.parseDouble(cell);
+//						price = Math.log(price);
 						bar.set(fields[i], price);
 					}
 					else {

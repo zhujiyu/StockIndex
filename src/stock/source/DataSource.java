@@ -20,6 +20,9 @@ import java.util.regex.Pattern;
 
 public abstract class DataSource {
 
+	public static final int SOUREC_FILE = 0;
+	public static final int SOUREC_WEB  = 1;
+	
 	public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	
 	protected String stock_code = "601857";

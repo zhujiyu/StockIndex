@@ -1,6 +1,8 @@
 package stock.index;
 
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,30 +23,34 @@ public abstract class StockIndex {
 	public static final int PRICE_CLOSE = StockData.PRICE_CLOSE;
 	public static final int PRICE_HIGH  = StockData.PRICE_HIGH;
 	public static final int PRICE_LOW   = StockData.PRICE_LOW;
-	public static final int PRICE_MIDDLE = StockData.PRICE_MIDDLE;  ///< (HIGH + LOW) / 2
+	public static final int PRICE_MIDDLE = StockData.PRICE_MIDDLE;   ///< (HIGH + LOW) / 2
 	public static final int PRICE_AVERAGE = StockData.PRICE_AVERAGE; ///< (HIGH + LOW + OPEN + CLOSE) / 4
 	public static final int PRICE_VOLUME = StockData.PRICE_VOLUME;
 	
-	protected HashMap<Date, Float> indexes = new HashMap<Date, Float>();
-	public int terms = 10;
+	protected HashMap<Date, Double> indexes = new HashMap<Date, Double>();
+	protected int terms = 10;
 	protected int direct = DIRECT_BUY;
 	
-	public int move = 0;
-	public Color color = Color.yellow;
-	public int window_index = WINDOW_TOP;
-	public int datatype = PRICE_AVERAGE;
+	protected int tran = 0;  ///< transform index to right
+	protected Color color = Color.yellow;
+	protected int window_index = WINDOW_TOP;
+	protected int datatype = PRICE_AVERAGE;
 	
 	public StockIndex(int terms, Color color) {
 		this.terms = terms;
 		this.color = color;
 	}
 	
+	public int getWindowIndex() {
+		return window_index;
+	}
+	
 	public void setDirect(int direct) {
 		this.direct = direct;
 	}
 	
-	public void setMove(int move) {
-		this.move = move;
+	public void tranIndex(int _tran) {
+		this.tran = _tran;
 	}
 	
 	public void setColor(Color c) {
@@ -59,10 +65,39 @@ public abstract class StockIndex {
 		this.datatype = type;
 	}
 	
-	public float get(Date date) {
+	public double get(Date date) {
 		if( indexes == null )
 			return 0;
 		return indexes.get(date);
+	}
+
+	public void drawIndex(Graphics g, PriceBar[] bars, int step,
+			Rectangle rect, double deltaValue, double baseValue, double zoom) {
+
+		if( bars.length == 0 )
+			return;
+		g.setColor(this.color);
+		
+		int middle = rect.width - step / 2 + this.tran * step, 
+				height = rect.y + rect.height;
+		double hp = rect.height * zoom / deltaValue;
+		PriceBar prev = null, curr = null;
+
+		prev = bars[0];
+		middle -= step;
+
+		for( int i = 1; i < bars.length; i ++ ) {
+			curr = bars[i];
+
+			double p = this.get(prev.start), c = this.get(curr.start);
+			int py = (int) Math.round( (p - baseValue) * hp );
+			int cy = (int) Math.round( (c - baseValue) * hp );
+			
+			g.drawLine(middle + step, height - py, middle, height - cy);
+			
+			prev = curr;
+			middle -= step;
+		}
 	}
 	
 	abstract public void calcIndex(List<PriceBar> bars);

@@ -20,14 +20,14 @@ public class AverageLine extends StockIndex {
 	@Override
 	public void calcIndex(List<PriceBar> bars) {
 
-		LinkedList<Float> prices = new LinkedList<Float>();
+		LinkedList<Double> prices = new LinkedList<Double>();
 		for( int i = bars.size() - 1; i >= 0; --i ) {
 			if( prices.size() >= this.terms )
 				prices.poll();
 			PriceBar bar = bars.get(i);
-			float v = bar.get(datatype), ave = v;
+			double v = bar.get(datatype), ave = v;
 
-			Iterator<Float> iter = prices.iterator();
+			Iterator<Double> iter = prices.iterator();
 			while( iter.hasNext() )
 				ave += iter.next();
 			ave /= (prices.size() + 1);
@@ -35,6 +35,7 @@ public class AverageLine extends StockIndex {
 			indexes.put(bar.start, ave);
 			prices.offer(v);
 		}
+		
 	}
 
 }
