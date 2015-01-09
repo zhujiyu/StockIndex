@@ -47,14 +47,16 @@ public class EnclosureLine extends StockIndex {
 		PriceBar _bar = bars.get(limit);
 		double ma = averages[limit + shift];
 		double diff = Math.abs(_bar.get(datatype) - ma);
-		indexes.put(_bar.start, ma + diff);
+		this.add(ma + diff, _bar.start);
+//		indexes.put(_bar.start, ma + diff);
 
 		System.out.println(limit);
 		for( int i = limit - 1; i >= 0; --i ) {
 			ma = averages[i + shift];
 			PriceBar bar = bars.get(i);
 			diff = Math.abs(bar.get(datatype) - ma) * 0.125f + diff * 0.875f;
-			indexes.put(bar.start, ma + diff);
+			this.add(ma + diff, bar.start);
+//			indexes.put(bar.start, ma + diff);
 		}
 		
 	}

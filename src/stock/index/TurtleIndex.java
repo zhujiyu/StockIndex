@@ -58,7 +58,8 @@ public class TurtleIndex extends StockIndex {
 					iv = Math.min(iv, iter.next());
 			}
 			
-			indexes.put(bar.start, iv);
+//			indexes.put(bar.start, iv);
+			this.add(iv, bar.start);
 			prices.offer(v);
 		}
 		

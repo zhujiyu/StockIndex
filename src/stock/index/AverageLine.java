@@ -32,8 +32,9 @@ public class AverageLine extends StockIndex {
 				ave += iter.next();
 			ave /= (prices.size() + 1);
 			
-			indexes.put(bar.start, ave);
 			prices.offer(v);
+			this.add(ave, bar.start);
+//			indexes.put(bar.start, ave);
 		}
 		
 	}

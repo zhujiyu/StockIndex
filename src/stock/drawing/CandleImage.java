@@ -80,8 +80,7 @@ public class CandleImage {
 		int divid = Math.round(rect.height * 0.8f);
 		float b = divid * 0.5f, s = b * scale;
 		Rectangle topWindow = new Rectangle(rect.x, rect.y + Math.round(b - s),
-				rect.width, Math.round(2 * s)); 
-//				rect.width, rect.y + Math.round(b + s));
+				rect.width, Math.round(2 * s));
 		Rectangle btmWindow = new Rectangle(rect.x, divid + 10, rect.width, 
 				rect.height - divid - 10);
 		
@@ -92,17 +91,13 @@ public class CandleImage {
 		g.drawRect(rect.x, rect.y, rect.width, divid);
 		g.drawRect(btmWindow.x, btmWindow.y, btmWindow.width, btmWindow.height);
 
-//		float temp = rect.height * y_zoom;
-//		rect.y = Math.round( (rect.height - temp) * 0.5f );
-//		rect.height = Math.round(temp);
-
 		topWindow.width = btmWindow.width = Math.min(rect.width, 
 				rect.width + (scoll - trans) * step);
-		int count = Math.min(topWindow.width / step + 1, bar_list.size());
+		int count = Math.min(topWindow.width / step + 1, bar_list.size()), 
+				first = Math.max(0, scoll - trans);
 		double high = 0, low = 0, maxVolume = 0;
 		
-		Iterator<PriceBar> iter = bar_list.listIterator(Math.max(0, 
-				scoll - trans));
+		Iterator<PriceBar> iter = bar_list.listIterator(first);
 		PriceBar[] bars = new PriceBar[count];
 
 		if( iter.hasNext() ) {
@@ -121,14 +116,26 @@ public class CandleImage {
 
 		drawVolume(g, bars, btmWindow, maxVolume);
 		drawCandle(g, bars, topWindow, high, low);
+
+		int right = topWindow.width - step / 2;
+		double  scale1 = - topWindow.height / (high - low), 
+				scale2 = - btmWindow.height * 0.8 / maxVolume;
+		double  base1 = topWindow.y + topWindow.height - low * scale1,
+				base2 = btmWindow.y + btmWindow.height;
 		
 		Iterator<StockIndex> _it = indexes.iterator();
 		while( _it.hasNext() ) {
 			StockIndex index = _it.next();
+			
 			if( index.getWindowIndex() == StockIndex.WINDOW_TOP )
-				index.drawIndex(g, bars, step, topWindow, high - low, low, 1);
+				index.drawIndex(g, first, count, step, right, scale1, base1);
 			else if( index.getWindowIndex() == StockIndex.WINDOW_BOTTOM )
-				index.drawIndex(g, bars, step, btmWindow, maxVolume, 0, 0.8f);
+				index.drawIndex(g, first, count, step, right, scale2, base2);
+			
+//			if( index.getWindowIndex() == StockIndex.WINDOW_TOP )
+//				index.drawIndex(g, bars, step, topWindow, high - low, low, 1);
+//			else if( index.getWindowIndex() == StockIndex.WINDOW_BOTTOM )
+//				index.drawIndex(g, bars, step, btmWindow, maxVolume, 0, 0.8f);
 		}
 	}
 	

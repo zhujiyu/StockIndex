@@ -7,7 +7,6 @@ import stock.data.StockData;
 import stock.index.EnclosureLine;
 import stock.index.StockIndex;
 import stock.index.AverageLine;
-import stock.index.TurtleIndex;
 import stock.source.DataSource;
 
 public class Demo {
@@ -18,7 +17,8 @@ public class Demo {
 	 */
 	public static void main(String[] args) {
 
-		String code = "601390";
+		String code = "601398";
+//		String code = "601390";
 //		String code = "600030";
 		StockData stock = new StockData(code, "ss");
 		
@@ -30,6 +30,7 @@ public class Demo {
 				CandleImage candle = new CandleImage(stock);
 				candle.tranCandle(30);
 				candle.setBarWidth(2);
+				
 //				StockIndex index = new TurtleIndex(20, StockIndex.DIRECT_BUY);
 //				candle.AddIndex(index);
 //				index = new TurtleIndex(5, StockIndex.DIRECT_SELL, Color.red);
@@ -53,7 +54,7 @@ public class Demo {
 				index.setDataType(StockIndex.PRICE_VOLUME);
 				candle.AddIndex(index);
 				
-				candle.Save(code + ".jpg");
+				candle.Save("image/" + code + ".jpg");
 //				stock.print();
 			}
 		} catch (ParseException e) {
