@@ -19,10 +19,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class DataSource {
-
 	public static final int SOUREC_FILE = 0;
 	public static final int SOUREC_WEB  = 1;
-	
 	public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	
 	protected String stock_code = "601857";
@@ -34,70 +32,8 @@ public abstract class DataSource {
 		market = _market;
 	}
 
-//	abstract public List< List<String> > get(Date start) throws IOException;
-	abstract public List< List<String> > get(Calendar start, Calendar end) 
-			throws IOException;
-	
-	/**
-	 * 解析csv文件 到一个list中 每个单元个为一个String类型记录，
-	 * 每一行为一个list。 再将所有的行放到一个总list中
-	 * @throws IOException 
-	 */
-	public List< List<String> > readCSVData(InputStreamReader fr) 
-			throws IOException {
-		BufferedReader br = new BufferedReader(fr);
-		String rec = null;// 一行
-		String str;// 一个单元格
-//		List<List<String>> listFile = new ArrayList< List<String> >();
+	abstract public List< List<String> > get(Calendar start, Calendar end) throws IOException;
 
-		Iterator< List<String> > iter = price_list.iterator();
-		while( iter.hasNext() ) {
-			iter.next().clear();
-		}
-		price_list.clear();
-		
-		try {
-			// 读取一行
-			while ((rec = br.readLine()) != null) {
-				Pattern pCells = Pattern
-						.compile("(\"[^\"]*(\"{2})*[^\"]*\")*[^,]*,");
-				Matcher mCells = pCells.matcher(rec);
-				List<String> cells = new ArrayList<String>();// 每行记录一个list
-				// 读取每个单元格
-				while (mCells.find()) {
-					str = mCells.group();
-					str = str.replaceAll(
-							"(?sm)\"?([^\"]*(\"{2})*[^\"]*)\"?.*,", "$1");
-					str = str.replaceAll("(?sm)(\"(\"))", "$2");
-					cells.add(str);
-				}
-				
-				price_list.add(cells);
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		finally {
-			if (br != null) {
-				br.close();
-			}
-			if (fr != null) {
-				fr.close();
-			}
-		}
-		
-		return price_list;
-	}
-
-//	public void clear() {
-//		Iterator< List<String> > iter = price_list.iterator();
-//		while( iter.hasNext() ) {
-//			iter.next().clear();
-//		}
-//		price_list.clear();
-//	}
-	
 	public void print() {
 		Iterator< List<String> > iter = price_list.iterator();
 		while( iter.hasNext() ) {
@@ -155,5 +91,57 @@ public abstract class DataSource {
             }
         }
     }
-	
+
+	/**
+	 * 解析csv文件 到一个list中 每个单元个为一个String类型记录，
+	 * 每一行为一个list。 再将所有的行放到一个总list中
+	 * @throws IOException 
+	 */
+	public List< List<String> > readCSVData(BufferedInputStream bis) throws IOException {
+		Iterator< List<String> > iter = price_list.iterator();
+		while( iter.hasNext() ) {
+			iter.next().clear();
+		}
+		price_list.clear();
+		
+		InputStreamReader fr = new InputStreamReader(bis);
+		BufferedReader br = new BufferedReader(fr);
+
+		try {
+			String rec = null;
+			
+			// 读取一行
+			while ((rec = br.readLine()) != null) {
+				Pattern pCells = Pattern
+						.compile("(\"[^\"]*(\"{2})*[^\"]*\")*[^,]*,");
+				Matcher mCells = pCells.matcher(rec);
+				List<String> cells = new ArrayList<String>();// 每行记录一个list
+				
+				// 读取每个单元格
+				while (mCells.find()) {
+					String str = mCells.group();
+					str = str.replaceAll(
+							"(?sm)\"?([^\"]*(\"{2})*[^\"]*)\"?.*,", "$1");
+					str = str.replaceAll("(?sm)(\"(\"))", "$2");
+					cells.add(str);
+				}
+				
+				price_list.add(cells);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if (br != null) {
+				br.close();
+			}
+			if (fr != null) {
+				fr.close();
+			}
+		}
+		
+		return price_list;
+	}
+
 }

@@ -2,7 +2,7 @@ package stock.source;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
@@ -26,16 +26,20 @@ public class WebSource extends DataSource {
 		return stock_url;
     }
 
-    private void download(Calendar start, Calendar end) throws IOException  {
-    	URL urlfile = new URL(getDataUrl(start, end));
+	@Override
+	public List<List<String>> get(Calendar start, Calendar end)
+			throws IOException {
+		String _url = getDataUrl(start, end);
+    	URL urlfile = new URL(_url);
     	HttpURLConnection httpUrl = (HttpURLConnection)urlfile.openConnection();
+    	
         httpUrl.connect();
-        BufferedInputStream bis = null;
+        InputStream stream = httpUrl.getInputStream();
+        BufferedInputStream bis = new BufferedInputStream(stream);
 
         try {
-        	bis = new BufferedInputStream(httpUrl.getInputStream());
-        	readCSVData(new InputStreamReader(bis));
-        	bis.close();
+        	readCSVData(bis);
+//        	readCSVData(new InputStreamReader(bis));
         } catch( IOException ex ) {
         	ex.printStackTrace();
         } finally {
@@ -43,14 +47,30 @@ public class WebSource extends DataSource {
         		bis.close();
         }
         
+        stream.close();
     	httpUrl.disconnect();
-    }
-
-	@Override
-	public List<List<String>> get(Calendar start, Calendar end)
-			throws IOException {
-		download(start, end);
-		return super.price_list;
+		
+		return price_list;
 	}
-    
+
+//  private void download(Calendar start, Calendar end) throws IOException  {
+//  	URL urlfile = new URL(getDataUrl(start, end));
+//  	HttpURLConnection httpUrl = (HttpURLConnection)urlfile.openConnection();
+//      httpUrl.connect();
+//      BufferedInputStream bis = null;
+//
+//      try {
+//      	bis = new BufferedInputStream(httpUrl.getInputStream());
+//      	readCSVData(new InputStreamReader(bis));
+//      	bis.close();
+//      } catch( IOException ex ) {
+//      	ex.printStackTrace();
+//      } finally {
+//      	if( bis != null )
+//      		bis.close();
+//      }
+//      
+//  	httpUrl.disconnect();
+//  }
+
 }

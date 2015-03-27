@@ -24,16 +24,18 @@ public class CandleImage {
 //	public static final int MAX_WIDTH = 64;
 //	public static final int DEFAULT_WIDTH = 12;
 	
-	private int img_width = 800;
-	private int img_height = 600;
+//	private int img_width = 800;
+//	private int img_height = 600;
 //	private StockData data;
+	
 	private List<PriceBar> bar_list;
 	private List<StockIndex> indexes = new ArrayList<StockIndex>();
 	
 	private int step = 8;
 	private int trans = 0;  ///< transform the initialize position of candle image to left 
 	private int scoll = 0;  ///< scoll screen
-	private float scale = 0.6f;
+	private float scale = .8f;
+	private Color background = Color.black;
 	
 	public CandleImage(StockData data) {
 		this.bar_list = data.getBarSet();
@@ -56,14 +58,13 @@ public class CandleImage {
 		this.scoll = move;
 	}
 	
-	public void Save(String file) {
-		BufferedImage bmp = new BufferedImage(img_width, img_height, 
+	public void Save(String file, int width, int height) {
+		BufferedImage bmp = new BufferedImage(width, height, 
 				BufferedImage.TYPE_3BYTE_BGR);
 		
 		if( bar_list.size() > 0 ) {
 			Graphics g = bmp.getGraphics();
-			this.display(g, new Rectangle(1, 1, img_width - 2, 
-					img_height - 2));
+			this.display(g, new Rectangle(0, 0, width, height));
 			g.dispose();
 		}
 		
@@ -81,15 +82,27 @@ public class CandleImage {
 		float b = divid * 0.5f, s = b * scale;
 		Rectangle topWindow = new Rectangle(rect.x, rect.y + Math.round(b - s),
 				rect.width, Math.round(2 * s));
-		Rectangle btmWindow = new Rectangle(rect.x, divid + 10, rect.width, 
-				rect.height - divid - 10);
+		Rectangle btmWindow = new Rectangle(rect.x, rect.y + divid + 10, 
+				rect.width, rect.height - divid - 10);
 		
-		g.setColor(Color.BLACK);
-		g.fillRect(0, 0, rect.width, rect.height);
+//		System.out.println("divid: " + divid);
+//		System.out.println("rect y: " + rect.y + ", height: " + rect.height);
+//		System.out.println("topWindow y: " + topWindow.y + ", height: " + topWindow.height);
+//		System.out.println("btmWindow y: " + btmWindow.y + ", height: " + btmWindow.height);
+		
+		
+		g.setColor(background);
+		g.setClip(rect.x, rect.y, rect.width, rect.height);
+		g.fillRect(rect.x, rect.y, rect.width, rect.height);
 
 		g.setColor(Color.red);
-		g.drawRect(rect.x, rect.y, rect.width, divid);
-		g.drawRect(btmWindow.x, btmWindow.y, btmWindow.width, btmWindow.height);
+		g.drawRect(rect.x + 1, rect.y + 1, rect.width - 2, divid - 2);
+		g.drawRect(btmWindow.x + 1, btmWindow.y, btmWindow.width - 2, 
+				btmWindow.height - 2);
+//		g.setColor(Color.yellow);
+//		g.drawRect(topWindow.x + 1, topWindow.y, topWindow.width - 2, 
+//				topWindow.height - 2);
+//		g.setColor(Color.red);
 
 		topWindow.width = btmWindow.width = Math.min(rect.width, 
 				rect.width + (scoll - trans) * step);
@@ -154,9 +167,6 @@ public class CandleImage {
 			PriceBar curr = bars[i];
 			
 			if( curr.get(PriceBar.PRICE_CLOSE) < curr.get(PriceBar.PRICE_OPEN) ) {
-//				top = curr.get(PriceBar.OPEN);
-//				btm = curr.get(PriceBar.CLOSE);
-
 				int y = (int) Math.round( (curr.open - low) * bhp );
 				int h = (int) Math.round( (curr.close - low) * bhp );
 
@@ -164,9 +174,6 @@ public class CandleImage {
 				g.fillRect(x, height - y, bar_width, y - h);
 			}
 			else {
-//				btm = curr.get(PriceBar.OPEN);
-//				top = curr.get(PriceBar.CLOSE);
-
 				int y = (int) Math.round( (curr.close - low) * bhp );
 				int h = (int) Math.round( (curr.open - low) * bhp );
 				

@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import stock.source.DataSource;
 import stock.source.FileSource;
@@ -20,7 +21,7 @@ public class StockData extends PriceBar {
 	public static final int MARKET = 2;
 	
 	private String code = "601857";
-	private String market = "ss";
+	private String market =  "ss";
 	private DataSource datasource;
 	
 	
@@ -31,14 +32,12 @@ public class StockData extends PriceBar {
 		this.market = market;
 	}
 	
-	public void load(Date start, Date end) {
+	public void load(Date start, Date end) 
+	{
 		Calendar start_time = new GregorianCalendar();
 		start_time.setTime(start);
 		Calendar end_date = new GregorianCalendar();
 		end_date.setTime(end);
-		
-//		source = new FileSource(this.code, this.market);
-//		source = new WebSource(this.code, this.market);
 		
 		try {
 			List<List<String>> data = datasource.get(start_time, end_date);
@@ -50,12 +49,13 @@ public class StockData extends PriceBar {
 		}
 	}
 	
-	public void load(Date start, int source) {
+	public void load(Date start, int source) 
+	{
 		if( source == DataSource.SOUREC_FILE )
 			datasource = new FileSource(this.code, this.market);
 		else
 			datasource = new WebSource(this.code, this.market);
-		load(start, new Date());
+		this.load(start, new Date());
 	}
 	
 	public void print() {
@@ -126,13 +126,15 @@ public class StockData extends PriceBar {
 			for(int i = 0; cellIter.hasNext(); i ++ ) {
 				String cell = cellIter.next();
 				try {
-					if( fields[i] != PriceBar.START ) {
-						double price = Double.parseDouble(cell);
-//						price = Math.log(price);
-						bar.set(fields[i], price);
+					if( fields[i] == PriceBar.START ) {
+						bar.start = DataSource.DATE_FORMAT.parse(cell);
+					}
+					else if( fields[i] == PriceBar.VOLUME ) {
+						bar.set(fields[i], Double.parseDouble(cell));
 					}
 					else {
-						bar.start = DataSource.DATE_FORMAT.parse(cell);
+//						double price = Double.parseDouble(cell);
+						bar.set(fields[i], Double.parseDouble(cell));
 					}
 				}
 				catch( ParseException ex ) {
@@ -145,9 +147,12 @@ public class StockData extends PriceBar {
 
 			bar_list.add(bar);
 		} // end of while
-		
+		this.Statistic();
+	}// end of parse
+	
+	public void Statistic() {
 		Iterator< PriceBar > iter = bar_list.iterator();
-		bar = null;
+		PriceBar bar = null;
 		
 		if( iter.hasNext() ) {
 			bar = iter.next();
@@ -169,6 +174,79 @@ public class StockData extends PriceBar {
 			this.start = bar.start;
 			this.minutes = bar.minutes * bar_list.size();
 		}
-	}// end of parse
+	}
 	
+	public void log() {
+		Iterator< PriceBar > iter = bar_list.iterator();
+		PriceBar bar = null;
+		
+		while( iter.hasNext() ) {
+			bar = iter.next();
+			bar.high  = Math.log(bar.high );
+			bar.low   = Math.log(bar.low  );
+			bar.open  = Math.log(bar.open );
+			bar.close = Math.log(bar.close);
+		}
+
+		this.high  = Math.log(this.high );
+		this.low   = Math.log(this.low  );
+		this.open  = Math.log(this.open );
+		this.close = Math.log(this.close);
+	}
+	
+	private PriceBar NewWeekBar(PriceBar dbar) {
+		PriceBar wbar = new PriceBar(1200);
+		wbar.start = dbar.start;
+		wbar.high = dbar.high;
+		wbar.low = dbar.low;
+		wbar.open = dbar.open;
+		wbar.close = dbar.close;
+		wbar.volume = dbar.volume;
+		return wbar;
+	}
+	
+	private void UpdateWeekBar(PriceBar wbar, PriceBar dbar) {
+		wbar.high = wbar.high > dbar.high ? wbar.high : dbar.high;
+		wbar.low = dbar.low > wbar.low ? wbar.low : dbar.low;
+		wbar.close = dbar.close;
+		wbar.volume += dbar.volume;
+	}
+	
+	public StockData ToWeekBars() {
+		StockData weekbars = new StockData(this.code, this.market);
+		List<PriceBar> wbar_list = new ArrayList<PriceBar>();
+		ListIterator<PriceBar> diter = bar_list.listIterator(bar_list.size());
+
+		Calendar start_time = new GregorianCalendar();
+		PriceBar wbar = new PriceBar(1200), dbar;
+		
+		if( diter.hasPrevious() ) {
+			dbar = diter.previous();
+			wbar = NewWeekBar(dbar);
+		}
+		
+		while( diter.hasPrevious() ) {
+			dbar = diter.previous();
+			start_time.setTime(dbar.start);
+			int w = start_time.get(Calendar.DAY_OF_WEEK);
+			
+			if( w == Calendar.MONDAY )
+			{
+				wbar_list.add(wbar);
+				wbar = NewWeekBar(dbar);
+			}
+			else
+				UpdateWeekBar(wbar, dbar);
+		}
+		wbar_list.add(wbar);
+		
+		ListIterator<PriceBar> witer = wbar_list.listIterator(wbar_list.size());
+		while( witer.hasPrevious() ) {
+			wbar = witer.previous();
+			weekbars.bar_list.add(wbar);
+		}
+		weekbars.Statistic();
+		
+		return weekbars;
+	}
 }

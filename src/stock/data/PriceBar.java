@@ -42,6 +42,16 @@ public class PriceBar {
 		this.minutes = minutes;
 	}
 	
+	public PriceBar clone() {
+		PriceBar bar = new PriceBar(this.start, this.minutes);
+		bar.close = this.close;
+		bar.high = this.high;
+		bar.low = this.low;
+		bar.open = this.open;
+		bar.volume = this.volume;
+		return bar;
+	}
+	
 	public String toString() {
 		return DataSource.DATE_FORMAT.format(this.start) + "," + 
 				this.open + "," + this.high + "," + this.low + "," + this.close;

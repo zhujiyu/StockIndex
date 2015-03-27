@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.ListIterator;
 
 import stock.data.PriceBar;
 import stock.data.StockData;
@@ -26,14 +27,11 @@ public abstract class StockIndex {
 	public static final int PRICE_AVERAGE = StockData.PRICE_AVERAGE; ///< (HIGH + LOW + OPEN + CLOSE) / 4
 	public static final int PRICE_VOLUME = StockData.PRICE_VOLUME;
 	
-//	private TreeMap<Date, Double> indexes = new TreeMap<Date, Double>();
-//	protected Object[] datas = null;
-
-	private ArrayList< Double > datas = new ArrayList<Double>();
+	protected List<Double> datas = new ArrayList<Double>();
 	protected int terms = 10;
 	protected int direct = DIRECT_BUY;
 	
-	protected int tran = 0;  ///< transform index to right
+	protected int shift = 0;  ///< transform index to right
 	protected Color color = Color.yellow;
 	protected int window_index = WINDOW_TOP;
 	protected int datatype = PRICE_AVERAGE;
@@ -53,8 +51,8 @@ public abstract class StockIndex {
 		this.direct = direct;
 	}
 	
-	public void tranIndex(int _tran) {
-		this.tran = _tran;
+	public void setShift(int shift) {
+		this.shift = shift;
 	}
 	
 	public void setColor(Color c) {
@@ -72,38 +70,16 @@ public abstract class StockIndex {
 	public void add(double value, Date time) {
 //		indexes.put(time, value);
 		datas.add(value);
-//		Entry r = new Entry<Date, Double>();
-//		datas.add(new Entry<Date, Double>(time, value));
 	}
-	
-//	public double get(Date date) {
-//		if( indexes == null )
-//			return 0;
-//		if( indexes.containsKey(date) )
-//			return indexes.get(date);
-//		else
-//			return 0;
-//	}
 	
 	public double get(int idx) {
 		if( datas != null ) {
-			idx += tran;
+			idx += shift;
 			if( idx >= 0 && idx < datas.size() ) {
 				return datas.get(datas.size() - idx - 1);
 			}
 		}
 		return 0;
-//		if( idx >= 0 && idx < datas.size() ) {
-//			if( datas != null ) {
-//				
-//				return datas.get(idx);
-//			}
-//			
-////			if( datas == null )
-////				datas = indexes.values().toArray();
-////			return (double)datas[idx];
-////			return (double) indexes.values().toArray()[idx];
-//		}
 	}
 	
 	public void drawIndex(Graphics g, int first, int count, int step, int right, 
@@ -113,32 +89,46 @@ public abstract class StockIndex {
 			return;
 		g.setColor(this.color);
 		
-		count = Math.min(datas.size(), count + tran);
-		right += this.tran * step; // 不管是否越界，向右移动tran个单位，这样下标就不用移动了
-		first = datas.size() - first - 1;
+		count = Math.min(datas.size(), count + shift);
+		right += this.shift * step; // 不管是否越界，向右移动tran个单位，这样下标就不用移动了
 		
-		double prev = datas.get(first), curr = 0;
-		for( right -= step, count --; count > 0;
-				count --, first --, right -= step ) {
-			curr = datas.get(first);
-
-//			int py = (int) Math.round( (prev - baseValue) * scale );
-//			int cy = (int) Math.round( (curr - baseValue) * scale );
-//			g.drawLine(middle + step, height - py, middle, height - cy);
-
-			int py = (int)Math.round( prev * scale + baseValue);
-			int cy = (int)Math.round( curr * scale + baseValue);
-			g.drawLine(right + step, py, right, cy);
-//			g.drawLine(right + step, 
-//					(int)Math.round( prev * scale - baseValue),
-////					height - (int)Math.round( prev * scale - baseValue * scale ), 
-//					right, 
-//					(int)Math.round( prev * scale - baseValue));
-////					height - (int)Math.round( curr * scale - baseValue * scale ));
-			
+		ListIterator<Double> iter = datas.listIterator(datas.size() - first);
+		double prev = 0, curr = 0;
+		if( iter.hasPrevious() && count -- > 0 ) {
+			prev = iter.previous();
+			right -= step;
+		}
+		
+		while ( iter.hasPrevious() && count -- > 0 ) {
+			curr = iter.previous();
+			g.drawLine(right + step, (int)Math.round( prev * scale + baseValue), 
+					right, (int)Math.round( curr * scale + baseValue));
 			prev = curr;
+			right -= step;
 		}
 	}
+
+//	public double get(Date date) {
+//		if( indexes == null )
+//			return 0;
+//		if( indexes.containsKey(date) )
+//			return indexes.get(date);
+//		else
+//			return 0;
+//	}
+	
+//	first = datas.size() - first - 1;
+//	double prev = datas.get(first), curr = 0;
+//	
+//	for( right -= step, count --; count > 0;
+//			count --, first --, right -= step ) {
+//		curr = datas.get(first);
+//
+//		g.drawLine(right + step, (int)Math.round( prev * scale + baseValue), 
+//				right, (int)Math.round( curr * scale + baseValue));
+//		
+//		prev = curr;
+//	}
 
 //	public void drawIndex(Graphics g, PriceBar[] bars, int step,
 //			Rectangle rect, double deltaValue, double baseValue, double zoom) {
